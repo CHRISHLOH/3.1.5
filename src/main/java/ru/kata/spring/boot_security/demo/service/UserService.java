@@ -54,7 +54,11 @@ public class UserService implements UserDetailsService {
     }
 
     public void saveUser(User user) {
-        user.setRoles(Collections.singleton(new Role("ROLE_USER")));
+        Role userRole = roleRepository.findByRole("ROLE_USER");
+        if (userRole == null) {
+            throw new RuntimeException("Role not found");
+        }
+        user.getRoles().add(userRole);
         String encodedPassword = passwordEncoder().encode(user.getPassword());
         user.setPassword(encodedPassword);
         userRepository.save(user);
@@ -65,8 +69,16 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.getRoles().clear();
+            userRepository.delete(user);
+        } else {
+            throw new RuntimeException("User not found");
+        }
     }
+
     public void updateUser(long id, User updatedUser) {
         Optional<User> optionalUser = getUserByID(id);
         if (optionalUser.isPresent()) {
