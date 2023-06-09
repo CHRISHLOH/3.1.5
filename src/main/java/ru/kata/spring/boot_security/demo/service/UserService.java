@@ -1,56 +1,58 @@
 package ru.kata.spring.boot_security.demo.service;
 
+import org.hibernate.Hibernate;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class UserService implements UserDetailsService {
-        private final UserRepository userRepository;
-        private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder bCryptPasswordEncoder;
 
-        private final PasswordEncoder bCryptPasswordEncoder;
-
-        public UserService(UserRepository userRepository, RoleRepository roleRepository, @Lazy PasswordEncoder bCryptPasswordEncoder) {
-            this.userRepository = userRepository;
-            this.roleRepository = roleRepository;
-            this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        }
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, @Lazy PasswordEncoder bCryptPasswordEncoder) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
 
     @Override
-    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
+        Hibernate.initialize(user.getRoles());
 
         return user;
     }
 
+    @Transactional(readOnly = true)
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
+    @Transactional(readOnly = true)
     public List<User> getUserList() {
         return userRepository.findAll();
     }
 
-
+    @Transactional(readOnly = true)
     public Optional<User> getUserByID(long id) {
         return userRepository.findById(id);
     }
@@ -91,8 +93,10 @@ public class UserService implements UserDetailsService {
                 throw new RuntimeException("Username already exists");
             }
             user.setUsername(updatedUser.getUsername());
-            String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
-            user.setPassword(encodedPassword);
+            if (!user.getPassword().equals(updatedUser.getPassword())) {
+                String encodedPassword = bCryptPasswordEncoder.encode(updatedUser.getPassword());
+                user.setPassword(encodedPassword);
+            }
             user.setEmail(updatedUser.getEmail());
             userRepository.save(user);
         }
