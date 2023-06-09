@@ -20,7 +20,7 @@ public class User implements UserDetails {
     private long id;
     @NotEmpty
     @Size(min = 2, max = 30, message = "Username should be between 2 and 30 characters.")
-    @Column(name = "username")
+    @Column(name = "username", unique = true)
     private String username;
 
     @NotEmpty
@@ -117,5 +117,4 @@ public class User implements UserDetails {
     public void setPassword(String password){
         this.password = password;
     }
-
 }

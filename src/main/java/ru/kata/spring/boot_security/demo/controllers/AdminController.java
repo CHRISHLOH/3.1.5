@@ -39,11 +39,18 @@ public class AdminController {
 
     @PostMapping
     public String createUser(@ModelAttribute("user") @Valid User user,
-                             BindingResult bindingResult) {
-        if (bindingResult.hasErrors())
+                             BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
             return "/new";
+        }
 
-        userService.saveUser(user);
+        try {
+            userService.saveUser(user);
+        } catch (RuntimeException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "/new";
+        }
+
         return "redirect:/admin";
     }
 
@@ -62,10 +69,16 @@ public class AdminController {
 
     @PatchMapping("/{id}")
     public String update(@ModelAttribute("user") @Valid User user,
-                         BindingResult bindingResult, @PathVariable("id") long id) {
+                         BindingResult bindingResult, @PathVariable("id") long id, Model model) {
         if (bindingResult.hasErrors())
             return "/edit";
-        userService.updateUser(id, user);
+        try {
+            userService.updateUser(id, user);
+        }
+        catch (RuntimeException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "/edit";
+        }
         return "redirect:/admin";
     }
 }
