@@ -1,10 +1,12 @@
 package ru.kata.spring.boot_security.demo.model;
 
+import org.hibernate.validator.constraints.Range;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.HashSet;
@@ -18,10 +20,21 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private long id;
+
     @NotEmpty
-    @Size(min = 2, max = 30, message = "Username should be between 2 and 30 characters.")
-    @Column(name = "username", unique = true)
-    private String username;
+    @Size(min = 2, max = 30, message = "firstName should be between 2 and 30 characters.")
+    @Column(name = "first_name")
+    private String firstName;
+
+    @NotEmpty
+    @Size(min = 2, max = 30, message = "lastName should be between 2 and 30 characters.")
+    @Column(name = "last_name")
+    private String lastName;
+
+    @NotNull
+    @Range(min = 0, max = Byte.MAX_VALUE, message = "Invalid age range")
+    @Column(name = "age")
+    private byte age;
 
     @NotEmpty
     @Size(min = 2, max = 80, message = "password should be between 2 and 30 characters.")
@@ -42,8 +55,12 @@ public class User implements UserDetails {
     )
     private Set <Role> roles = new HashSet<>();
 
-    public User(String username, String password, String email, Set<Role> roles) {
-        this.username = username;
+    public User(long id,  String firstName, String lastName, byte age, String password, String email, Set<Role> roles) {
+        this.id = id;
+
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
         this.password = password;
         this.email = email;
         this.roles = roles;
@@ -63,7 +80,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override
@@ -110,11 +127,32 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
-    public void setUsername(String username){
-        this.username = username;
-    }
 
     public void setPassword(String password){
         this.password = password;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public byte getAge() {
+        return age;
+    }
+
+    public void setAge(byte age) {
+        this.age = age;
     }
 }

@@ -9,5 +9,5 @@ import javax.validation.constraints.Size;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    User findByUsername (String username);
+    User findByEmail (String username);
 }

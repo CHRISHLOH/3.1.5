@@ -30,14 +30,20 @@
     <div class="row ">
         <nav class="navbar navbar-expand-xl navbar-dark" style="background-color: #343a40;">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">User@mail.ru</a>
+                <a class="navbar-brand" th:text="${user.email}"></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarDark" aria-controls="navbarDark" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse show" id="navbarDark">
                     <ul class="navbar-nav me-auto mb-2 mb-xl-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">with roles User</a>
+                            <a class="nav-link active" aria-current="page">
+                                with roles:
+                                <span th:each="role, iterStat : ${user.getRoles()}">
+                                    <span th:text="${role.role}"></span>
+                                    <span th:if="${!iterStat.last}">, </span>
+                                </span>
+                            </a>
                         </li>
                     </ul>
 
@@ -81,18 +87,21 @@
                                         <th scope="col">Age</th>
                                         <th scope="col">Email</th>
                                         <th scope="col">Role</th>
-                                        <th scope="col">Edit</th>
-                                        <th scope="col">Delete</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr>
-                                        <th scope="row">1</th>
-                                        <td>Mark</td>
-                                        <td>Otto</td>
-                                        <td>@mdo</td>
-                                        <td>@mdo</td>
-                                        <td>@mdo</td>
+                                    <tr th:each="user : ${user}">
+                                        <td th:text="${user.id}"></td>
+                                        <td th:text="${user.firstName}"></td>
+                                        <td th:text="${user.lastName}"></td>
+                                        <td th:text="${user.age}"></td>
+                                        <td th:text="${user.email}"></td>
+                                        <td>
+                                            <span th:each="role, iterStat : ${user.getRoles()}">
+                                            <span th:text="${role.role}"></span>
+                                            <span th:if="${!iterStat.last}">, </span>
+                                            </span>
+                                        </td>
                                     </tr>
                                     </tbody>
                                 </table>

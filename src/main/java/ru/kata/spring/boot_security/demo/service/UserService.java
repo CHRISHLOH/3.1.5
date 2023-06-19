@@ -16,6 +16,8 @@ import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 @Service
 @Transactional
@@ -31,8 +33,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email);
 
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
@@ -43,8 +45,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(readOnly = true)
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public User findByUsername(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Transactional(readOnly = true)
@@ -57,17 +59,17 @@ public class UserService implements UserDetailsService {
         return userRepository.findById(id);
     }
 
-    public void saveUser(User user) {
-        User existingUser = userRepository.findByUsername(user.getUsername());
+    public void saveUser(User user, String role) {
+        User existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser != null) {
             throw new RuntimeException("Username already exists");
         }
 
-        Role userRole = roleRepository.findByRole("ROLE_USER");
+        Role userRole = roleRepository.findByRole(role);
         if (userRole == null) {
             throw new RuntimeException("Role not found");
         }
-
+        System.out.println("aaaaaaaaaaaaaaaaaaaaaa");
         user.getRoles().add(userRole);
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
@@ -77,6 +79,7 @@ public class UserService implements UserDetailsService {
     public void deleteUser(Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
+            System.out.println("cccccccccccccccccc");
             User user = optionalUser.get();
             user.getRoles().clear();
             userRepository.delete(user);
@@ -85,22 +88,32 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void updateUser(long id, User updatedUser) {
+    public void updateUser(long id, User updatedUser, String role) {
         Optional<User> optionalUser = getUserByID(id);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (!user.getUsername().equals(updatedUser.getUsername()) && userRepository.findByUsername(updatedUser.getUsername()) != null) {
+            if (!user.getUsername().equals(updatedUser.getUsername()) && userRepository.findByEmail(updatedUser.getEmail()) != null) {
                 throw new RuntimeException("Username already exists");
             }
-            user.setUsername(updatedUser.getUsername());
             if (!user.getPassword().equals(updatedUser.getPassword())) {
                 String encodedPassword = bCryptPasswordEncoder.encode(updatedUser.getPassword());
                 user.setPassword(encodedPassword);
             }
+
+            Role userRole = roleRepository.findByRole(role);
+            if (userRole == null) {
+                throw new RuntimeException("Role not found");
+            }
+            System.out.println("asdsadadsadasd");
+            user.getRoles().add(userRole);
+            user.setFirstName(updatedUser.getFirstName());
+            user.setLastName(updatedUser.getLastName());
+            user.setAge(updatedUser.getAge());
             user.setEmail(updatedUser.getEmail());
             userRepository.save(user);
         }
     }
+
 }
 
 

@@ -1,13 +1,18 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.validation.Valid;
+import java.security.Principal;
+import java.util.Set;
 
 
 @Controller
@@ -17,39 +22,28 @@ public class AdminController {
 
     public AdminController(UserService userService) {
         this.userService = userService;
+
     }
 
     @GetMapping
-    public String adminPage(Model model) {
+    public String adminPage(Model model, Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+
+        model.addAttribute("user", user);
         model.addAttribute("users", userService.getUserList());
         return "admin";
     }
 
-    @GetMapping("/{id}")
-    public String userById(@PathVariable("id") long id, Model model) {
-        model.addAttribute("user", userService.getUserByID(id));
-        return "id";
-    }
-
-    @GetMapping("/new")
-    public String newUser(Model model) {
-        model.addAttribute("user", new User());
-        return "new";
-    }
 
     @PostMapping
     public String createUser(@ModelAttribute("user") @Valid User user,
-                             BindingResult bindingResult, Model model) {
+                             @RequestParam("selectedRole") String selectedRole,
+                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "/new";
+            return "admin";
         }
 
-        try {
-            userService.saveUser(user);
-        } catch (RuntimeException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            return "/new";
-        }
+        userService.saveUser(user, selectedRole);
 
         return "redirect:/admin";
     }
@@ -60,24 +54,17 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @GetMapping("/{id}/edit")
-    public String edit(Model model, @PathVariable("id") long id) {
-        User user = userService.getUserByID(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        model.addAttribute("user", user);
-        return "edit";
-    }
+
 
     @PatchMapping("/{id}")
-    public String update(@ModelAttribute("user") @Valid User user,
-                         BindingResult bindingResult, @PathVariable("id") long id, Model model) {
-        if (bindingResult.hasErrors())
-            return "/edit";
+    public String update(@ModelAttribute("user") @Valid User user
+            , @PathVariable("id") long id, Model model, String selectedRole) {
         try {
-            userService.updateUser(id, user);
+            userService.updateUser(id, user, selectedRole);
         }
         catch (RuntimeException e) {
             model.addAttribute("errorMessage", e.getMessage());
-            return "/edit";
+            return "admin";
         }
         return "redirect:/admin";
     }
