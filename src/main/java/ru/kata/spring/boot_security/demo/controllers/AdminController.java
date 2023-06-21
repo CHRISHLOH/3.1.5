@@ -34,17 +34,27 @@ public class AdminController {
         return "admin";
     }
 
+    @GetMapping("/user")
+    public String showUserDetails(Model model, Principal principal) {
+        model.addAttribute("user", userService.findByUsername(principal.getName()));
+        return "user";
+    }
+
 
     @PostMapping
     public String createUser(@ModelAttribute("user") @Valid User user,
                              @RequestParam("selectedRole") String selectedRole,
-                             BindingResult bindingResult) {
+                             BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             return "admin";
         }
 
-        userService.saveUser(user, selectedRole);
-
+        try {
+            userService.saveUser(user, selectedRole);
+        } catch (RuntimeException e) {
+            model.addAttribute("emailError", e.getMessage());
+            return "admin";
+        }
         return "redirect:/admin";
     }
 
@@ -57,8 +67,11 @@ public class AdminController {
 
 
     @PatchMapping("/{id}")
-    public String update(@ModelAttribute("user") @Valid User user
-            , @PathVariable("id") long id, Model model, String selectedRole) {
+    public String update(@ModelAttribute("user") @Valid User user,
+                         BindingResult bindingResult, @PathVariable("id") long id, Model model, String selectedRole) {
+
+        if (bindingResult.hasErrors())
+            return "admin";
         try {
             userService.updateUser(id, user, selectedRole);
         }

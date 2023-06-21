@@ -22,28 +22,28 @@ public class User implements UserDetails {
     private long id;
 
     @NotEmpty
-    @Size(min = 2, max = 30, message = "firstName should be between 2 and 30 characters.")
+    @Size(min = 2, max = 30)
     @Column(name = "first_name")
     private String firstName;
 
     @NotEmpty
-    @Size(min = 2, max = 30, message = "lastName should be between 2 and 30 characters.")
+    @Size(min = 2, max = 30)
     @Column(name = "last_name")
     private String lastName;
 
     @NotNull
-    @Range(min = 0, max = Byte.MAX_VALUE, message = "Invalid age range")
+    @Range(min = 0, max = Byte.MAX_VALUE)
     @Column(name = "age")
     private byte age;
 
     @NotEmpty
-    @Size(min = 2, max = 80, message = "password should be between 2 and 30 characters.")
+    @Size(min = 2, max = 80)
     @Column(name = "password")
     private String password;
 
     @NotEmpty
-    @Size(min = 2, max = 30, message = "email should be between 2 and 30 characters.")
-    @Column(name = "email")
+    @Size(min = 2, max = 30)
+    @Column(name = "email", unique = true)
     private String email;
 
 
@@ -154,5 +154,14 @@ public class User implements UserDetails {
 
     public void setAge(byte age) {
         this.age = age;
+    }
+
+    public boolean hasRole(String roleName) {
+        for (Role role : roles) {
+            if (role.getRole().equals(roleName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

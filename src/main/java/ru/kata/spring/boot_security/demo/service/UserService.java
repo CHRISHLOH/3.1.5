@@ -62,14 +62,13 @@ public class UserService implements UserDetailsService {
     public void saveUser(User user, String role) {
         User existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser != null) {
-            throw new RuntimeException("Username already exists");
+            throw new RuntimeException("Email already exists");
         }
 
         Role userRole = roleRepository.findByRole(role);
         if (userRole == null) {
             throw new RuntimeException("Role not found");
         }
-        System.out.println("aaaaaaaaaaaaaaaaaaaaaa");
         user.getRoles().add(userRole);
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
@@ -79,7 +78,6 @@ public class UserService implements UserDetailsService {
     public void deleteUser(Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
-            System.out.println("cccccccccccccccccc");
             User user = optionalUser.get();
             user.getRoles().clear();
             userRepository.delete(user);
@@ -92,8 +90,8 @@ public class UserService implements UserDetailsService {
         Optional<User> optionalUser = getUserByID(id);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (!user.getUsername().equals(updatedUser.getUsername()) && userRepository.findByEmail(updatedUser.getEmail()) != null) {
-                throw new RuntimeException("Username already exists");
+            if (!user.getUsername().equals(updatedUser.getEmail()) && userRepository.findByEmail(updatedUser.getEmail()) != null) {
+                throw new RuntimeException("Email already exists");
             }
             if (!user.getPassword().equals(updatedUser.getPassword())) {
                 String encodedPassword = bCryptPasswordEncoder.encode(updatedUser.getPassword());
@@ -104,7 +102,7 @@ public class UserService implements UserDetailsService {
             if (userRole == null) {
                 throw new RuntimeException("Role not found");
             }
-            System.out.println("asdsadadsadasd");
+            user.getRoles().clear();
             user.getRoles().add(userRole);
             user.setFirstName(updatedUser.getFirstName());
             user.setLastName(updatedUser.getLastName());
