@@ -59,21 +59,30 @@ public class UserService implements UserDetailsService {
         return userRepository.findById(id);
     }
 
-    public void saveUser(User user, String role) {
+    public void saveUser(User user) {
         User existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser != null) {
             throw new RuntimeException("Email already exists");
         }
 
-        Role userRole = roleRepository.findByRole(role);
+        Role userRole = roleRepository.findByRole(user.getRoles()
+                .stream()
+                .findFirst()
+                .map(Role::getRole)
+                .orElse(null));
         if (userRole == null) {
             throw new RuntimeException("Role not found");
         }
+
+        user.getRoles().clear();
         user.getRoles().add(userRole);
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         userRepository.save(user);
+
+
     }
+
 
     public void deleteUser(Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
@@ -86,8 +95,8 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void updateUser(long id, User updatedUser, String role) {
-        Optional<User> optionalUser = getUserByID(id);
+    public void updateUser(User updatedUser) {
+        Optional<User> optionalUser = getUserByID(updatedUser.getId());
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (!user.getUsername().equals(updatedUser.getEmail()) && userRepository.findByEmail(updatedUser.getEmail()) != null) {
@@ -98,10 +107,15 @@ public class UserService implements UserDetailsService {
                 user.setPassword(encodedPassword);
             }
 
-            Role userRole = roleRepository.findByRole(role);
+            Role userRole = roleRepository.findByRole(updatedUser.getRoles()
+                    .stream()
+                    .findFirst()
+                    .map(Role::getRole)
+                    .orElse(null));
             if (userRole == null) {
                 throw new RuntimeException("Role not found");
             }
+            System.out.println(userRole);
             user.getRoles().clear();
             user.getRoles().add(userRole);
             user.setFirstName(updatedUser.getFirstName());

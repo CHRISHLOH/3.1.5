@@ -1,84 +1,66 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.validation.Valid;
 import java.security.Principal;
-import java.util.Set;
+import java.util.List;
+import java.util.Optional;
 
 
-@Controller
-@RequestMapping("/admin")
+@RestController
+@RequestMapping("/api/admin")
 public class AdminController {
     private final UserService userService;
 
     public AdminController(UserService userService) {
         this.userService = userService;
-
     }
 
     @GetMapping
-    public String adminPage(Model model, Principal principal) {
-        User user = userService.findByUsername(principal.getName());
+    public List<User> adminPage() {
+       return userService.getUserList();
+    }
 
-        model.addAttribute("user", user);
-        model.addAttribute("users", userService.getUserList());
-        return "admin";
+
+    @GetMapping("/{id}")
+    public User showUserDetails(@PathVariable long id) {
+        Optional<User> optionalUser = userService.getUserByID(id);
+        if (optionalUser.isPresent()) {
+           return optionalUser.get();
+        } else {
+            throw new RuntimeException("User not found");
+        }
     }
 
     @GetMapping("/user")
-    public String showUserDetails(Model model, Principal principal) {
-        model.addAttribute("user", userService.findByUsername(principal.getName()));
-        return "user";
+    public User showUserDetails( Principal principal) {
+        return userService.findByUsername(principal.getName());
     }
-
-
     @PostMapping
-    public String createUser(@ModelAttribute("user") @Valid User user,
-                             @RequestParam("selectedRole") String selectedRole,
-                             BindingResult bindingResult, Model model) {
-        if (bindingResult.hasErrors()) {
-            return "admin";
-        }
-
-        try {
-            userService.saveUser(user, selectedRole);
-        } catch (RuntimeException e) {
-            model.addAttribute("emailError", e.getMessage());
-            return "admin";
-        }
-        return "redirect:/admin";
+    public ResponseEntity<HttpStatus> createUser(@RequestBody User user) {
+        userService.saveUser(user);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable("id") long id) {
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") long id) {
         userService.deleteUser(id);
-        return "redirect:/admin";
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
 
 
-    @PatchMapping("/{id}")
-    public String update(@ModelAttribute("user") @Valid User user,
-                         BindingResult bindingResult, @PathVariable("id") long id, Model model, String selectedRole) {
+    @PatchMapping
+    public ResponseEntity<HttpStatus> update(@RequestBody User user) {
 
-        if (bindingResult.hasErrors())
-            return "admin";
-        try {
-            userService.updateUser(id, user, selectedRole);
-        }
-        catch (RuntimeException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            return "admin";
-        }
-        return "redirect:/admin";
+            userService.updateUser(user);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 }

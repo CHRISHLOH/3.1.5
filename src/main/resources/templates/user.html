@@ -34,7 +34,7 @@
     <div class="row ">
         <nav class="navbar navbar-expand-xl navbar-dark" style="background-color: #343a40;">
             <div class="container-fluid">
-                <a class="navbar-brand fw-bold" th:text="${user.email}"></a>
+                <a class="navbar-brand fw-bold" id="userEmail"></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarDark" aria-controls="navbarDark" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -42,15 +42,10 @@
                     <ul class="navbar-nav me-auto mb-2 mb-xl-0">
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page">
-                                with roles:
-                                <span th:each="role, iterStat : ${user.getRoles()}">
-                                    <span th:text="${role.role}"></span>
-                                    <span th:if="${!iterStat.last}">, </span>
-                                </span>
+                                with roles: <span id="userRoles"></span>
                             </a>
                         </li>
                     </ul>
-
                     <ul class="navbar-nav ms-auto mb-2 mb-xl-0">
                         <li class="nav-item">
                             <a class="nav-link" href="/logout">Logout</a>
@@ -93,19 +88,6 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr th:each="user : ${user}" class="small my-medium-font-weight">
-                                        <td th:text="${user.id}"></td>
-                                        <td th:text="${user.firstName}"></td>
-                                        <td th:text="${user.lastName}"></td>
-                                        <td th:text="${user.age}"></td>
-                                        <td th:text="${user.email}"></td>
-                                        <td>
-                                            <span th:each="role, iterStat : ${user.getRoles()}">
-                                            <span th:text="${role.role}"></span>
-                                            <span th:if="${!iterStat.last}">, </span>
-                                            </span>
-                                        </td>
-                                    </tr>
                                     </tbody>
                                 </table>
                             </h5>
@@ -116,4 +98,38 @@
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Отправка запроса для получения данных о пользователе
+        fetch('/api/user')
+            .then(response => response.json())
+            .then(user => {
+                // Заполнение данных о пользователе в шапке страницы
+                $('#userEmail').text(user.email);
+                let userRoles = user.roles.map(role => role.role).join(', ');
+                $('#userRoles').text(userRoles);
+
+                let roleNames = user.roles.map(function (role) {
+                    return role.role;
+                }).join(', ');
+
+                // Заполнение данных о пользователе в таблице
+                let tableRow = $('<tr>').appendTo('tbody');
+                $('<td>').text(user.id).appendTo(tableRow);
+                $('<td>').text(user.firstName).appendTo(tableRow);
+                $('<td>').text(user.lastName).appendTo(tableRow);
+                $('<td>').text(user.age).appendTo(tableRow);
+                $('<td>').text(user.email).appendTo(tableRow);
+                $('<td>').text(roleNames).appendTo(tableRow);
+            })
+            .catch(error => {
+                console.log('Ошибка при получении данных пользователя', error);
+            });
+    });
+
+
+
+</script>
 </body>
