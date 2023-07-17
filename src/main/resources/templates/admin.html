@@ -261,8 +261,6 @@
                                     <option value="ROLE_USER">User</option>
                                 </select>
                             </div>
-
-                            <input type="submit" class="btn btn-primary" value="Edit">
                         </form>
                     </div>
                     <div class="col"></div>
@@ -270,6 +268,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="confirmEditButton">Edit</button>
             </div>
         </div>
     </div>
@@ -333,7 +332,7 @@
     $(document).ready(function () {
 
         $('#newUserForm').submit(function (e) {
-            e.preventDefault(); // Предотвратить отправку формы по умолчанию
+            e.preventDefault();
 
             // Получить данные из формы
             let formData = {
@@ -345,7 +344,6 @@
                 roles: [$('#newUserForm select[name="selectedRole"]').val()]
             };
 
-            // Отправить POST-запрос на сервер с использованием fetch
             fetch('/api/admin', {
                 method: 'POST',
                 headers: {
@@ -369,18 +367,21 @@
                         // Загрузка данных таблицы пользователей
                         loadUserTableData();
                     } else {
-                        throw new Error('Error creating user');
+                        return response.text().then(function (errorMessage) {
+                            throw new Error(errorMessage);
+                        });
                     }
                 })
                 .catch(function (error) {
-                    console.log('Error creating user:', error);
+                    // Вывод ошибки
+                    alert(error.message);
                 });
         });
 
-        $('#editUserForm').submit(function (e) {
-            e.preventDefault(); // Предотвратить отправку формы по умолчанию
+        $('#confirmEditButton').click(function (e) {
+            e.preventDefault();
 
-            // Создать объект с обновленными данными пользователя
+
             let formData = {
                 id: $('#editID').val(),
                 firstName: $('#editFirstName').val(),
@@ -391,7 +392,7 @@
                 roles: [$('#editUserForm select[name="selectedRole"]').val()]
             };
 
-            // Отправить PATCH-запрос на сервер с обновленными данными пользователя
+
             fetch('/api/admin/', {
                 method: 'PATCH',
                 headers: {
@@ -408,11 +409,14 @@
                         // Обновить таблицу пользователей
                         loadUserTableData();
                     } else {
-                        throw new Error('Error updating user');
+                        return response.text().then(function (errorMessage) {
+                            throw new Error(errorMessage);
+                        });
                     }
                 })
                 .catch(function (error) {
-                    console.log('Error updating user:', error);
+
+                    alert(error.message);
                 });
         });
 
@@ -420,7 +424,7 @@
         $('#confirmDeleteButton').click(function () {
             let userId = $('#deleteID').val();
 
-            // Отправить DELETE-запрос на сервер для удаления пользователя
+
             fetch('/api/admin/' + userId, {
                 method: 'DELETE',
                 headers: {
@@ -430,17 +434,20 @@
                 .then(function (response) {
                     if (response.ok) {
                         console.log('User deleted successfully');
-                        // Закрыть модальное окно удаления
+
                         $('#deleteModal').modal('hide');
 
-                        // Обновить таблицу пользователей
+
                         loadUserTableData();
                     } else {
-                        throw new Error('Error deleting user');
+                        return response.text().then(function (errorMessage) {
+                            throw new Error(errorMessage);
+                        });
                     }
                 })
                 .catch(function (error) {
-                    console.log('Error deleting user:', error);
+
+                    alert(error.message);
                 });
         });
 
@@ -465,6 +472,7 @@
 
 
                         let tableRow = $('<tr>')
+                            .addClass('small my-medium-font-weight align-middle')
                             .append($('<td>').text(user.id))
                             .append($('<td>').text(user.firstName))
                             .append($('<td>').text(user.lastName))
@@ -485,7 +493,6 @@
                                     $('#editLastName').val(user.lastName);
                                     $('#editAge').val(user.age);
                                     $('#editEmail').val(user.email);
-                                    // Здесь вы можете заполнить другие поля формы в соответствии с данными пользователя
 
                                     // Открыть модальное окно
                                     $('#editModal').modal('show');
@@ -516,6 +523,7 @@
                 });
         }
 
+
         function loadUserInfo() {
             fetch('/api/admin/user')
                 .then(function (response) {
@@ -526,7 +534,7 @@
                     }
                 })
                 .then(function (user) {
-                    // Установка значения электронной почты пользователя
+
                     $('#userEmail').text(user.email);
                     let userRoles = user.roles.map(role => role.role).join(', ');
                     $('#userRoles').text(userRoles);
@@ -537,8 +545,10 @@
                     let roleNames = user.roles.map(function (role) {
                         return role.role;
                     }).join(', ');
-                    // Очистка содержимого таблицы
+
+
                     let tableRow = $('<tr>')
+                        .addClass('small my-medium-font-weight align-middle')
                         .append($('<td>').text(user.id))
                         .append($('<td>').text(user.firstName))
                         .append($('<td>').text(user.lastName))

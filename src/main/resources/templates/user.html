@@ -87,7 +87,7 @@
                                         <th scope="col">Role</th>
                                     </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="userInfoTableBody">
                                     </tbody>
                                 </table>
                             </h5>
@@ -115,14 +115,17 @@
                     return role.role;
                 }).join(', ');
 
+                let userInfoTableBody = $('#userInfoTableBody');
                 // Заполнение данных о пользователе в таблице
-                let tableRow = $('<tr>').appendTo('tbody');
-                $('<td>').text(user.id).appendTo(tableRow);
-                $('<td>').text(user.firstName).appendTo(tableRow);
-                $('<td>').text(user.lastName).appendTo(tableRow);
-                $('<td>').text(user.age).appendTo(tableRow);
-                $('<td>').text(user.email).appendTo(tableRow);
-                $('<td>').text(roleNames).appendTo(tableRow);
+                let tableRow = $('<tr>')
+                    .addClass('small my-medium-font-weight align-middle')
+                    .append($('<td>').text(user.id))
+                    .append($('<td>').text(user.firstName))
+                    .append($('<td>').text(user.lastName))
+                    .append($('<td>').text(user.age))
+                    .append($('<td>').text(user.email))
+                    .append($('<td>').text(roleNames));
+                userInfoTableBody.append(tableRow);
             })
             .catch(error => {
                 console.log('Ошибка при получении данных пользователя', error);

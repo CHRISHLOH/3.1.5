@@ -2,13 +2,10 @@ package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
-import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -44,23 +41,34 @@ public class AdminController {
         return userService.findByUsername(principal.getName());
     }
     @PostMapping
-    public ResponseEntity<HttpStatus> createUser(@RequestBody User user) {
-        userService.saveUser(user);
-        return ResponseEntity.ok(HttpStatus.OK);
+    public ResponseEntity<String> createUser(@RequestBody User user) {
+        try {
+            userService.saveUser(user);
+            return ResponseEntity.ok("User created successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok(HttpStatus.OK);
+    public ResponseEntity<String> deleteUser(@PathVariable("id") long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.ok("User delete successfully");
+    } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
 
 
     @PatchMapping
-    public ResponseEntity<HttpStatus> update(@RequestBody User user) {
-
+    public ResponseEntity<String> update(@RequestBody User user) {
+        try {
             userService.updateUser(user);
-        return ResponseEntity.ok(HttpStatus.OK);
+            return ResponseEntity.ok("User edit successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }
