@@ -341,8 +341,24 @@
                 age: $('#formControlInput3').val(),
                 email: $('#formControlInput4').val(),
                 password: $('#formControlInput5').val(),
-                roles: [$('#newUserForm select[name="selectedRole"]').val()]
+                roles: []
             };
+
+            let role = {
+                id: 0,
+                role: ""
+            }
+
+            if ($('#newUserForm select[name="selectedRole"]').val() === 'ROLE_USER'){
+                role.id = 1;
+                role.role = "ROLE_USER"
+            } else {
+                role.id = 2;
+                role.role = "ROLE_ADMIN"
+            }
+
+            formData.roles.push(role)
+
 
             fetch('/api/admin', {
                 method: 'POST',
@@ -389,9 +405,23 @@
                 age: $('#editAge').val(),
                 email: $('#editEmail').val(),
                 password: $('#editPassword').val(),
-                roles: [$('#editUserForm select[name="selectedRole"]').val()]
+                roles: []
             };
 
+            let role = {
+                id: 0,
+                role: ""
+            }
+
+            if ($('#editUserForm select[name="selectedRole"]').val() === 'ROLE_USER'){
+                role.id = 1;
+                role.role = "ROLE_USER"
+            } else {
+                role.id = 2;
+                role.role = "ROLE_ADMIN"
+            }
+
+            formData.roles.push(role)
 
             fetch('/api/admin/', {
                 method: 'PATCH',
